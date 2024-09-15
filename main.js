@@ -40,19 +40,21 @@ function preload() {
 
 function create() {
   // Add background
-  this.add.image(400, 300, 'background');
+  const background = this.add.image(0, 0, 'background');
+  background.setOrigin(0, 0);
+  background.setDisplaySize(800, 600);
 
   // Create bird
   bird = this.physics.add.sprite(100, 300, 'bird');
   bird.setCollideWorldBounds(true);
+  bird.body.allowGravity = true;
+  bird.setDisplaySize(50, 50);
 
   // Create obstacles group
   obstacles = this.physics.add.group();
 
-  // Create lives text
+  // Create texts
   livesText = this.add.text(16, 16, 'Lives: ' + lives, { fontSize: '32px', fill: '#000' });
-
-  // Create score text
   scoreText = this.add.text(16, 50, 'Score: ' + score, { fontSize: '32px', fill: '#000' });
 
   // Enable input
@@ -75,9 +77,19 @@ function update(time, delta) {
     return;
   }
 
-  // Bird flapping
+  // Reset bird's horizontal velocity
+  bird.setVelocityX(0);
+
+  // Horizontal movement
+  if (cursors.left.isDown) {
+    bird.setVelocityX(-200); // Move left
+  } else if (cursors.right.isDown) {
+    bird.setVelocityX(200); // Move right
+  }
+
+  // Vertical movement (flapping)
   if (cursors.space.isDown) {
-    bird.setVelocityY(-300);
+    bird.setVelocityY(-300); // Flap upwards
   }
 
   // Spawn obstacles
@@ -103,10 +115,26 @@ function update(time, delta) {
 
 function spawnObstacle(scene) {
   const obstacleType = Phaser.Math.RND.pick(['plane', 'helicopter']);
-  const obstacleY = Phaser.Math.Between(50, 550);
+  const obstacleY = Phaser.Math.Between(50, 550); // Random vertical position
   const obstacle = obstacles.create(850, obstacleY, obstacleType);
-  obstacle.setVelocityX(-200);
-  obstacle.setCollideWorldBounds(false);
+
+  // Set obstacle sizes
+  if (obstacleType === 'plane') {
+    obstacle.setDisplaySize(100, 50);
+  } else {
+    obstacle.setDisplaySize(80, 60);
+  }
+
+  // Disable gravity for the obstacle
+  obstacle.body.allowGravity = false;
+
+  // Set horizontal velocity
+  obstacle.setVelocityX(-200); // Move left at 200 pixels/second
+
+  // Ensure vertical velocity is zero
+  obstacle.setVelocityY(0);
+
+  // Set the obstacle to be immovable
   obstacle.setImmovable(true);
 }
 
